@@ -4,7 +4,7 @@ A simple E-Paper display library with common base class and separate IO class fo
 - With full Graphics and Text support using Adafruit_GFX
 
 - For SPI e-paper displays from Dalian Good Display 
-- and SPI e-paper boards from Waveshare
+- and SPI e-paper boards from Waveshare 
 
 ### important note :
 - these displays are for 3.3V supply and 3.3V data lines
