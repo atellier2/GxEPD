@@ -254,12 +254,12 @@ void GxGDEH029A1::eraseDisplay(bool using_partial_update)
   }
 }
 
-void GxGDEH029A1::updateWindow(uint16_t x, uint16_t y, uint16_t w, uint16_t h, bool using_rotation)
+bool GxGDEH029A1::updateWindow(uint16_t x, uint16_t y, uint16_t w, uint16_t h, bool using_rotation)
 {
-  if (_current_page != -1) return;
+  if (_current_page != -1) return false;
   if (using_rotation) _rotate(x, y, w, h);
-  if (x >= GxGDEH029A1_WIDTH) return;
-  if (y >= GxGDEH029A1_HEIGHT) return;
+  if (x >= GxGDEH029A1_WIDTH) return false;
+  if (y >= GxGDEH029A1_HEIGHT) return false;
   uint16_t xe = gx_uint16_min(GxGDEH029A1_WIDTH, x + w) - 1;
   uint16_t ye = gx_uint16_min(GxGDEH029A1_HEIGHT, y + h) - 1;
   uint16_t xs_d8 = x / 8;
@@ -295,6 +295,7 @@ void GxGDEH029A1::updateWindow(uint16_t x, uint16_t y, uint16_t w, uint16_t h, b
     }
   }
   delay(GxGDEH029A1_PU_DELAY);
+  return true;
 }
 
 void GxGDEH029A1::_writeToWindow(uint16_t xs, uint16_t ys, uint16_t xd, uint16_t yd, uint16_t w, uint16_t h)
