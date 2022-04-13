@@ -12,6 +12,7 @@
 // Library: https://github.com/ZinggJM/GxEPD
 
 #include "GxGDEH029A1.h"
+#include "log.hpp"
 
 //#define DISABLE_DIAGNOSTIC_OUTPUT
 
@@ -53,7 +54,10 @@ GxGDEH029A1::GxGDEH029A1(GxIO& io, int8_t rst, int8_t busy) :
 
 void GxGDEH029A1::drawPixel(int16_t x, int16_t y, uint16_t color)
 {
-  if ((x < 0) || (x >= width()) || (y < 0) || (y >= height())) return;
+  if ((x < 0) || (x >= width()) || (y < 0) || (y >= height())){
+    Log::debug("GxGDEH029A1::drawPixel : Les coordonnées ne sont pas correctes");
+    return;
+  }
 
   // check rotation, move pixel around if necessary
   switch (getRotation())
@@ -118,9 +122,9 @@ void GxGDEH029A1::fillScreen(uint16_t color)
   }
 }
 
-void GxGDEH029A1::update(void)
+bool GxGDEH029A1::update(void)
 {
-  if (_current_page != -1) return;
+  if (_current_page != -1) return false;
   _using_partial_mode = false;
   _Init_Full(0x03);
   _writeCommand(0x24);
@@ -135,6 +139,7 @@ void GxGDEH029A1::update(void)
   }
   _Update_Full();
   _PowerOff();
+  return true;
 }
 
 void  GxGDEH029A1::drawBitmap(const uint8_t *bitmap, uint16_t x, uint16_t y, uint16_t w, uint16_t h, uint16_t color, int16_t mode)

@@ -43,24 +43,37 @@ class GxGDEH029A1 : public GxEPD
     GxGDEH029A1(GxIO& io, int8_t rst = 9, int8_t busy = 7);
 #endif
 
+    /**
+     * @brief Draw a pixel (in the buffer) at the coordinate X/Y with a color code
+     * 
+     * Only Black and white are available
+     * 
+     * @param x x coordinate
+     * @param y y coordinate
+     * @param color 
+     */
     void drawPixel(int16_t x, int16_t y, uint16_t color);
 
     /**
-     * @brief 
+     * @brief Init the screen hardware and fill the buffer in White
      * 
      * @param serial_diag_bitrate 
      */
     void init(uint32_t serial_diag_bitrate = 0); // = 0 : disabled
     
     /**
-     * @brief fill the buffer screen with a black or white color 
+     * @brief Fill the buffer screen with a black or white color 
      * 
      * @param color 
      */
     void fillScreen(uint16_t color = GxEPD_WHITE); // 0x0 black, >0x0 white, to buffer
     
-    
-    void update(void);
+    /**
+     * @brief Update the whole screen from the buffer
+     * 
+     */
+    bool update(void);
+
     // to buffer, may be cropped, drawPixel() used, update needed
     void  drawBitmap(const uint8_t *bitmap, uint16_t x, uint16_t y, uint16_t w, uint16_t h, uint16_t color, int16_t mode = bm_normal);
     // to full screen, filled with white if size is less, no update needed

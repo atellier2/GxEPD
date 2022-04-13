@@ -33,7 +33,7 @@
 // select the library/libraries to add, none to preserve code space
 //#include <U8g2_for_Adafruit_GFX.h>
 //#include <Adafruit_ftGFX.h>
-//#include <GxFont_GFX_TFT_eSPI.h>
+#include <GxFont_GFX_TFT_eSPI.h>
 
 class GxFont_GFX : public Adafruit_GFX
 {

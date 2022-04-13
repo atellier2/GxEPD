@@ -16,7 +16,7 @@
 #include <Arduino.h>
 #include <SPI.h>
 #include "GxIO/GxIO.h"
-#include <Adafruit_GFX.h>
+#include "Adafruit_GFX.h"
 #include "GxFont_GFX.h"
 
 // the only colors supported by any of these displays; mapping of other colors is class specific
@@ -52,7 +52,7 @@ class GxEPD : public GxFont_GFX
     virtual void drawPixel(int16_t x, int16_t y, uint16_t color) = 0;
     virtual void init(uint32_t serial_diag_bitrate = 0) = 0; // = 0 : disabled
     virtual void fillScreen(uint16_t color) = 0; // to buffer
-    virtual void update(void) = 0;
+    virtual bool update(void) = 0;
     // to buffer, may be cropped, drawPixel() used, update needed, subclass may support some modes
     virtual void drawBitmap(const uint8_t *bitmap, uint16_t x, uint16_t y, uint16_t w, uint16_t h, uint16_t color, int16_t m = bm_normal) = 0;
     // to buffer, may be cropped, drawPixel() used, update needed, subclass may support some modes, default for example bitmaps
@@ -77,7 +77,7 @@ class GxEPD : public GxFont_GFX
     };
     virtual void eraseDisplay(bool using_partial_update = false) {};
     // partial update of rectangle from buffer to screen, does not power off
-    virtual void updateWindow(uint16_t x, uint16_t y, uint16_t w, uint16_t h, bool using_rotation = true) {};
+    virtual bool updateWindow(uint16_t x, uint16_t y, uint16_t w, uint16_t h, bool using_rotation = true) {};
     // partial update of rectangle at (xs,ys) from buffer to screen at (xd,yd), does not power off
     virtual void updateToWindow(uint16_t xs, uint16_t ys, uint16_t xd, uint16_t yd, uint16_t w, uint16_t h, bool using_rotation = true) {};
     // terminate cleanly updateWindow or updateToWindow before removing power or long delays
