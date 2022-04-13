@@ -16,7 +16,7 @@
 #include <Arduino.h>
 #include <SPI.h>
 #include "GxIO/GxIO.h"
-#include "Adafruit_GFX.h"
+#include <Adafruit_GFX.h>
 #include "GxFont_GFX.h"
 
 // the only colors supported by any of these displays; mapping of other colors is class specific

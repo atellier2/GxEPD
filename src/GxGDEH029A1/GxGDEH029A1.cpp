@@ -12,7 +12,7 @@
 // Library: https://github.com/ZinggJM/GxEPD
 
 #include "GxGDEH029A1.h"
-#include "log.hpp"
+//#include "log.hpp"
 
 //#define DISABLE_DIAGNOSTIC_OUTPUT
 
@@ -55,7 +55,7 @@ GxGDEH029A1::GxGDEH029A1(GxIO& io, int8_t rst, int8_t busy) :
 void GxGDEH029A1::drawPixel(int16_t x, int16_t y, uint16_t color)
 {
   if ((x < 0) || (x >= width()) || (y < 0) || (y >= height())){
-    Log::debug("GxGDEH029A1::drawPixel : Les coordonnées ne sont pas correctes");
+    //Log::debug("GxGDEH029A1::drawPixel : Les coordonnées ne sont pas correctes");
     return;
   }
 
