@@ -42,9 +42,24 @@ class GxGDEH029A1 : public GxEPD
 #else
     GxGDEH029A1(GxIO& io, int8_t rst = 9, int8_t busy = 7);
 #endif
+
     void drawPixel(int16_t x, int16_t y, uint16_t color);
+
+    /**
+     * @brief 
+     * 
+     * @param serial_diag_bitrate 
+     */
     void init(uint32_t serial_diag_bitrate = 0); // = 0 : disabled
-    void fillScreen(uint16_t color); // 0x0 black, >0x0 white, to buffer
+    
+    /**
+     * @brief fill the buffer screen with a black or white color 
+     * 
+     * @param color 
+     */
+    void fillScreen(uint16_t color = GxEPD_WHITE); // 0x0 black, >0x0 white, to buffer
+    
+    
     void update(void);
     // to buffer, may be cropped, drawPixel() used, update needed
     void  drawBitmap(const uint8_t *bitmap, uint16_t x, uint16_t y, uint16_t w, uint16_t h, uint16_t color, int16_t mode = bm_normal);
@@ -55,10 +70,10 @@ class GxGDEH029A1 : public GxEPD
     /**
      * @brief partial update of rectangle from buffer to screen, does not power off
      * 
-     * @param x 
-     * @param y 
-     * @param w 
-     * @param h 
+     * @param x X coordonnate of the top left corner
+     * @param y Y coordonnate of the top left corner
+     * @param w width of the partial update
+     * @param h height of the partial update
      * @param using_rotation (true by default) 
      * @return true 
      * @return false 
@@ -68,14 +83,17 @@ class GxGDEH029A1 : public GxEPD
     
     // partial update of rectangle at (xs,ys) from buffer to screen at (xd,yd), does not power off
     void updateToWindow(uint16_t xs, uint16_t ys, uint16_t xd, uint16_t yd, uint16_t w, uint16_t h, bool using_rotation = true);
+    
     // terminate cleanly updateWindow or updateToWindow before removing power or long delays
     void powerDown();
+    
     // paged drawing, for limited RAM, drawCallback() is called GxGDEH029A1_PAGES times
     // each call of drawCallback() should draw the same
     void drawPaged(void (*drawCallback)(void));
     void drawPaged(void (*drawCallback)(uint32_t), uint32_t);
     void drawPaged(void (*drawCallback)(const void*), const void*);
     void drawPaged(void (*drawCallback)(const void*, const void*), const void*, const void*);
+    
     // paged drawing to screen rectangle at (x,y) using partial update
     void drawPagedToWindow(void (*drawCallback)(void), uint16_t x, uint16_t y, uint16_t w, uint16_t h);
     void drawPagedToWindow(void (*drawCallback)(uint32_t), uint16_t x, uint16_t y, uint16_t w, uint16_t h, uint32_t);
