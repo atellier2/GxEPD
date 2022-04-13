@@ -51,8 +51,21 @@ class GxGDEH029A1 : public GxEPD
     // to full screen, filled with white if size is less, no update needed
     void drawBitmap(const uint8_t *bitmap, uint32_t size, int16_t mode = bm_normal); // only bm_normal, bm_invert, bm_partial_update modes implemented
     void eraseDisplay(bool using_partial_update = false);
-    // partial update of rectangle from buffer to screen, does not power off
-    void updateWindow(uint16_t x, uint16_t y, uint16_t w, uint16_t h, bool using_rotation = true);
+
+    /**
+     * @brief partial update of rectangle from buffer to screen, does not power off
+     * 
+     * @param x 
+     * @param y 
+     * @param w 
+     * @param h 
+     * @param using_rotation (true by default) 
+     * @return true 
+     * @return false 
+     */
+    bool updateWindow(uint16_t x, uint16_t y, uint16_t w, uint16_t h, bool using_rotation = true);
+    
+    
     // partial update of rectangle at (xs,ys) from buffer to screen at (xd,yd), does not power off
     void updateToWindow(uint16_t xs, uint16_t ys, uint16_t xd, uint16_t yd, uint16_t w, uint16_t h, bool using_rotation = true);
     // terminate cleanly updateWindow or updateToWindow before removing power or long delays
