@@ -418,7 +418,12 @@ int16_t GxFont_GFX::drawString(const String& string, int poX, int poY, int font)
 }
 int16_t GxFont_GFX::drawString(const String& string, int poX, int poY)
 {
-  return ((_font_gfx == GxFont_GFX_TFT_eSPI_font_gfx) ? _GxF_GxFont_GFX_TFT_eSPI.drawString(string, poX, poY) : 0);
+  if(_font_gfx == GxFont_GFX_TFT_eSPI_font_gfx){
+    return _GxF_GxFont_GFX_TFT_eSPI.drawString(string, poX, poY);
+  } else{
+    ESP_LOGE("GxFont_GFX", "drawString: Unknown font");
+  }
+  //return ((_font_gfx == GxFont_GFX_TFT_eSPI_font_gfx) ? _GxF_GxFont_GFX_TFT_eSPI.drawString(string, poX, poY) : 0);
 }
 int16_t GxFont_GFX::textWidth(const char *string, int font)
 {

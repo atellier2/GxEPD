@@ -12,7 +12,6 @@
 // Library: https://github.com/ZinggJM/GxEPD
 
 #include "GxGDEH029A1.h"
-#include <log.hpp>
 
 //#define DISABLE_DIAGNOSTIC_OUTPUT
 
@@ -26,64 +25,68 @@
 #define GxGDEH029A1_PU_DELAY 300
 
 const uint8_t GxGDEH029A1::LUTDefault_full[] =
-{
-  0x32,  // command
-  0x50, 0xAA, 0x55, 0xAA, 0x11, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-  0x00, 0x00, 0x00, 0x00, 0x00, 0xFF, 0xFF, 0x1F, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
-};
+    {
+        0x32, // command
+        0x50, 0xAA, 0x55, 0xAA, 0x11, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+        0x00, 0x00, 0x00, 0x00, 0x00, 0xFF, 0xFF, 0x1F, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
 
 const uint8_t GxGDEH029A1::LUTDefault_part[] =
-{
-  0x32,  // command
-  0x10, 0x18, 0x18, 0x08, 0x18, 0x18, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-  0x00, 0x00, 0x00, 0x00, 0x00, 0x13, 0x14, 0x44, 0x12, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
-};
+    {
+        0x32, // command
+        0x10, 0x18, 0x18, 0x08, 0x18, 0x18, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x13, 0x14, 0x44, 0x12, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
 
-const uint8_t GxGDEH029A1::GDOControl[] = {0x01, (GxGDEH029A1_Y_PIXELS - 1) % 256, (GxGDEH029A1_Y_PIXELS - 1) / 256, 0x00}; //for 2.9inch
+const uint8_t GxGDEH029A1::GDOControl[] = {0x01, (GxGDEH029A1_Y_PIXELS - 1) % 256, (GxGDEH029A1_Y_PIXELS - 1) / 256, 0x00}; // for 2.9inch
 const uint8_t GxGDEH029A1::softstart[] = {0x0c, 0xd7, 0xd6, 0x9d};
-const uint8_t GxGDEH029A1::VCOMVol[] = {0x2c, 0xa8};  // VCOM 7c
+const uint8_t GxGDEH029A1::VCOMVol[] = {0x2c, 0xa8};   // VCOM 7c
 const uint8_t GxGDEH029A1::DummyLine[] = {0x3a, 0x1a}; // 4 dummy line per gate
 const uint8_t GxGDEH029A1::Gatetime[] = {0x3b, 0x08};  // 2us per line
 
-GxGDEH029A1::GxGDEH029A1(GxIO& io, int8_t rst, int8_t busy) :
-  GxEPD(GxGDEH029A1_WIDTH, GxGDEH029A1_HEIGHT), IO(io),
-  _current_page(-1), _using_partial_mode(false), _diag_enabled(false),
-  _rst(rst), _busy(busy)
+GxGDEH029A1::GxGDEH029A1(GxIO &io, int8_t rst, int8_t busy) : GxEPD(GxGDEH029A1_WIDTH, GxGDEH029A1_HEIGHT), IO(io),
+                                                              _current_page(-1), _using_partial_mode(false), _diag_enabled(false),
+                                                              _rst(rst), _busy(busy)
 {
 }
 
 void GxGDEH029A1::drawPixel(int16_t x, int16_t y, uint16_t color)
 {
-  if ((x < 0) || (x >= width()) || (y < 0) || (y >= height())){
-    //Log::msgDebug("GxGDEH029A1::drawPixel : Les coordonnées ne sont pas correctes");
+  if ((x < 0) || (x >= width()) || (y < 0) || (y >= height()))
+  {
+    // Log::msgDebug("GxGDEH029A1::drawPixel : Les coordonnées ne sont pas correctes");
+    ESP_LOGD("GxGDEH029A1::drawPixel : Les coordonnées ne sont pas correctes ");
     return;
   }
 
   // check rotation, move pixel around if necessary
   switch (getRotation())
   {
-    case 1:
-      swap(x, y);
-      x = GxGDEH029A1_WIDTH - x - 1;
-      break;
-    case 2:
-      x = GxGDEH029A1_WIDTH - x - 1;
-      y = GxGDEH029A1_HEIGHT - y - 1;
-      break;
-    case 3:
-      swap(x, y);
-      y = GxGDEH029A1_HEIGHT - y - 1;
-      break;
+  case 1:
+    swap(x, y);
+    x = GxGDEH029A1_WIDTH - x - 1;
+    break;
+  case 2:
+    x = GxGDEH029A1_WIDTH - x - 1;
+    y = GxGDEH029A1_HEIGHT - y - 1;
+    break;
+  case 3:
+    swap(x, y);
+    y = GxGDEH029A1_HEIGHT - y - 1;
+    break;
   }
   uint16_t i = x / 8 + y * GxGDEH029A1_WIDTH / 8;
   if (_current_page < 1)
   {
-    if (i >= sizeof(_buffer)) return;
+    if (i >= sizeof(_buffer))
+    {
+      ESP_LOGD("GxGDEH029A1::drawPixel : La page actuelle est n'est < 1");
+      return;
+    }
   }
   else
   {
     y -= _current_page * GxGDEH029A1_PAGE_HEIGHT;
-    if ((y < 0) || (y >= GxGDEH029A1_PAGE_HEIGHT)) return;
+    if ((y < 0) || (y >= GxGDEH029A1_PAGE_HEIGHT))
+      return;
     i = x / 8 + y * GxGDEH029A1_WIDTH / 8;
   }
 
@@ -124,7 +127,11 @@ void GxGDEH029A1::fillScreen(uint16_t color)
 
 bool GxGDEH029A1::update(void)
 {
-  if (_current_page != -1) return false;
+  if (_current_page != -1)
+  {
+    Serial.println("GxGDEH029A1::update : La page courant n'est pas -1");
+    return false;
+  }
   _using_partial_mode = false;
   _Init_Full(0x03);
   _writeCommand(0x24);
@@ -142,22 +149,31 @@ bool GxGDEH029A1::update(void)
   return true;
 }
 
-void  GxGDEH029A1::drawBitmap(const uint8_t *bitmap, uint16_t x, uint16_t y, uint16_t w, uint16_t h, uint16_t color, int16_t mode)
+void GxGDEH029A1::drawBitmap(const uint8_t *bitmap, uint16_t x, uint16_t y, uint16_t w, uint16_t h, uint16_t color, int16_t mode)
 {
-  if (mode & bm_default) mode |= bm_flip_x | bm_invert;
+  if (mode & bm_default)
+    mode |= bm_flip_x | bm_invert;
   drawBitmapBM(bitmap, x, y, w, h, color, mode);
 }
 
 void GxGDEH029A1::drawBitmap(const uint8_t *bitmap, uint32_t size, int16_t mode)
 {
-  if (_current_page != -1) return;
+  if (_current_page != -1)
+  {
+    ESP_LOGD("GxGDEH029A1::drayBitmap : Nous ne sommes pas sur la page -1");
+    return;
+  }
   // example bitmaps are made for y-decrement, x-increment, for origin on opposite corner
   // bm_flip_x for normal display (bm_flip_y would be rotated)
-  if (mode & bm_default) mode |= bm_flip_x;
+  if (mode & bm_default)
+    mode |= bm_flip_x;
   uint8_t ram_entry_mode = 0x03; // y-increment, x-increment : normal mode
-  if ((mode & bm_flip_y) && (mode & bm_flip_x)) ram_entry_mode = 0x00; // y-decrement, x-decrement
-  else if (mode & bm_flip_y) ram_entry_mode = 0x01; // y-decrement, x-increment
-  else if (mode & bm_flip_x) ram_entry_mode = 0x02; // y-increment, x-decrement
+  if ((mode & bm_flip_y) && (mode & bm_flip_x))
+    ram_entry_mode = 0x00; // y-decrement, x-decrement
+  else if (mode & bm_flip_y)
+    ram_entry_mode = 0x01; // y-decrement, x-increment
+  else if (mode & bm_flip_x)
+    ram_entry_mode = 0x02; // y-increment, x-decrement
   if (mode & bm_partial_update)
   {
     _using_partial_mode = true; // remember
@@ -173,7 +189,8 @@ void GxGDEH029A1::drawBitmap(const uint8_t *bitmap, uint32_t size, int16_t mode)
 #else
         data = bitmap[i];
 #endif
-        if (mode & bm_invert) data = ~data;
+        if (mode & bm_invert)
+          data = ~data;
       }
       _writeData(data);
     }
@@ -191,7 +208,8 @@ void GxGDEH029A1::drawBitmap(const uint8_t *bitmap, uint32_t size, int16_t mode)
 #else
         data = bitmap[i];
 #endif
-        if (mode & bm_invert) data = ~data;
+        if (mode & bm_invert)
+          data = ~data;
       }
       _writeData(data);
     }
@@ -213,7 +231,8 @@ void GxGDEH029A1::drawBitmap(const uint8_t *bitmap, uint32_t size, int16_t mode)
 #else
         data = bitmap[i];
 #endif
-        if (mode & bm_invert) data = ~data;
+        if (mode & bm_invert)
+          data = ~data;
       }
       _writeData(data);
     }
@@ -224,7 +243,12 @@ void GxGDEH029A1::drawBitmap(const uint8_t *bitmap, uint32_t size, int16_t mode)
 
 void GxGDEH029A1::eraseDisplay(bool using_partial_update)
 {
-  if (_current_page != -1) return;
+  if (_current_page != -1)
+  {
+    ESP_LOGD("GxGDEH029A1::eraseDisplay : Nous ne sommes pas sur la page -1");
+    return;
+  }
+
   if (using_partial_update)
   {
     _using_partial_mode = true; // remember
@@ -261,17 +285,37 @@ void GxGDEH029A1::eraseDisplay(bool using_partial_update)
 
 bool GxGDEH029A1::updateWindow(uint16_t x, uint16_t y, uint16_t w, uint16_t h, bool using_rotation)
 {
-  if (_current_page != -1) return false;
-  if (using_rotation) _rotate(x, y, w, h);
-  if (x >= GxGDEH029A1_WIDTH) return false;
-  if (y >= GxGDEH029A1_HEIGHT) return false;
+  if (_current_page != -1)
+  {
+    Serial.println("GxGDEH029A1::updateWindow Nous ne sommes pas sur la page -1");
+    return false;
+  }
+  if (using_rotation)
+    _rotate(x, y, w, h);
+
+
+  if (x >= GxGDEH029A1_WIDTH)
+  {
+    ESP_LOGE("GxGDEH029A1::updateWindow", "x (%d) est supérieur à la taille max (%d)", x, GxGDEH029A1_WIDTH);
+    x = GxGDEH029A1_WIDTH - 1;
+    ESP_LOGE("GxGDEH029A1::updateWindow", "y a été remplacé par la valeur max %d",x);
+  }
+
+  if (y >= GxGDEH029A1_HEIGHT)
+  {
+    ESP_LOGE("GxGDEH029A1::updateWindow", "y est supérieur à la taille max %d ", GxGDEH029A1_HEIGHT);
+    y = GxGDEH029A1_HEIGHT - 1;
+    ESP_LOGE("GxGDEH029A1::updateWindow", "y a été remplacé par la valeur max %d", y);
+  }
   uint16_t xe = gx_uint16_min(GxGDEH029A1_WIDTH, x + w) - 1;
   uint16_t ye = gx_uint16_min(GxGDEH029A1_HEIGHT, y + h) - 1;
   uint16_t xs_d8 = x / 8;
   uint16_t xe_d8 = xe / 8;
+  Serial.println("TEST");
   _Init_Part(0x03);
+  Serial.println("TEST2");
   _SetRamArea(xs_d8, xe_d8, y % 256, y / 256, ye % 256, ye / 256); // X-source area,Y-gate area
-  _SetRamPointer(xs_d8, y % 256, y / 256); // set ram
+  _SetRamPointer(xs_d8, y % 256, y / 256);                         // set ram
   _waitWhileBusy();
   _writeCommand(0x24);
   for (int16_t y1 = y; y1 <= ye; y1++)
@@ -287,7 +331,7 @@ bool GxGDEH029A1::updateWindow(uint16_t x, uint16_t y, uint16_t w, uint16_t h, b
   delay(GxGDEH029A1_PU_DELAY);
   // update erase buffer
   _SetRamArea(xs_d8, xe_d8, y % 256, y / 256, ye % 256, ye / 256); // X-source area,Y-gate area
-  _SetRamPointer(xs_d8, y % 256, y / 256); // set ram
+  _SetRamPointer(xs_d8, y % 256, y / 256);                         // set ram
   _waitWhileBusy();
   _writeCommand(0x24);
   for (int16_t y1 = y; y1 <= ye; y1++)
@@ -305,12 +349,32 @@ bool GxGDEH029A1::updateWindow(uint16_t x, uint16_t y, uint16_t w, uint16_t h, b
 
 void GxGDEH029A1::_writeToWindow(uint16_t xs, uint16_t ys, uint16_t xd, uint16_t yd, uint16_t w, uint16_t h)
 {
-  //Serial.printf("_writeToWindow(%d, %d, %d, %d, %d, %d)\n", xs, ys, xd, yd, w, h);
-  // the screen limits are the hard limits
-  if (xs >= GxGDEH029A1_WIDTH) return;
-  if (ys >= GxGDEH029A1_HEIGHT) return;
-  if (xd >= GxGDEH029A1_WIDTH) return;
-  if (yd >= GxGDEH029A1_HEIGHT) return;
+  // Serial.printf("_writeToWindow(%d, %d, %d, %d, %d, %d)\n", xs, ys, xd, yd, w, h);
+  //  the screen limits are the hard limits
+  if (xs >= GxGDEH029A1_WIDTH)
+  {
+    ESP_LOGE("GxGDEH029A1::_writeToWindow : xs est supérieur à la taille max " + GxGDEH029A1_WIDTH);
+    ESP_LOGE("GxGDEH029A1::_writeToWindow : xs a été remplacé par la valeur max");
+    xs = GxGDEH029A1_WIDTH - 1;
+  }
+  if (ys >= GxGDEH029A1_HEIGHT)
+  {
+    ESP_LOGE("GxGDEH029A1::_writeToWindow : ys est supérieur à la taille max " + GxGDEH029A1_HEIGHT);
+    ESP_LOGE("GxGDEH029A1::_writeToWindow : ys a été remplacé par la valeur max");
+    ys = GxGDEH029A1_HEIGHT - 1;
+  }
+  if (xd >= GxGDEH029A1_WIDTH)
+  {
+    ESP_LOGE("GxGDEH029A1::_writeToWindow : xd est supérieur à la taille max " + GxGDEH029A1_WIDTH);
+    ESP_LOGE("GxGDEH029A1::_writeToWindow : xd a été remplacé par la valeur max");
+    xd = GxGDEH029A1_WIDTH - 1;
+  }
+  if (yd >= GxGDEH029A1_HEIGHT)
+  {
+    ESP_LOGE("GxGDEH029A1::_writeToWindow : yd est supérieur à la taille max " + GxGDEH029A1_HEIGHT);
+    ESP_LOGE("GxGDEH029A1::_writeToWindow : yd a été remplacé par la valeur max");
+    yd = GxGDEH029A1_HEIGHT - 1;
+  };
   w = gx_uint16_min(w, GxGDEH029A1_WIDTH - xs);
   w = gx_uint16_min(w, GxGDEH029A1_WIDTH - xd);
   h = gx_uint16_min(h, GxGDEH029A1_HEIGHT - ys);
@@ -322,7 +386,7 @@ void GxGDEH029A1::_writeToWindow(uint16_t xs, uint16_t ys, uint16_t xd, uint16_t
   uint16_t xse_d8 = xs / 8 + xde_d8 - xds_d8;
   uint16_t yse = ys + h - 1;
   _SetRamArea(xds_d8, xde_d8, yd % 256, yd / 256, yde % 256, yde / 256); // X-source area,Y-gate area
-  _SetRamPointer(xds_d8, yd % 256, yd / 256); // set ram
+  _SetRamPointer(xds_d8, yd % 256, yd / 256);                            // set ram
   _waitWhileBusy();
   _writeCommand(0x24);
   for (int16_t y1 = ys; y1 <= yse; y1++)
@@ -342,26 +406,26 @@ void GxGDEH029A1::updateToWindow(uint16_t xs, uint16_t ys, uint16_t xd, uint16_t
   {
     switch (getRotation())
     {
-      case 1:
-        swap(xs, ys);
-        swap(xd, yd);
-        swap(w, h);
-        xs = GxGDEH029A1_WIDTH - xs - w - 1;
-        xd = GxGDEH029A1_WIDTH - xd - w - 1;
-        break;
-      case 2:
-        xs = GxGDEH029A1_WIDTH - xs - w - 1;
-        ys = GxGDEH029A1_HEIGHT - ys - h - 1;
-        xd = GxGDEH029A1_WIDTH - xd - w - 1;
-        yd = GxGDEH029A1_HEIGHT - yd - h - 1;
-        break;
-      case 3:
-        swap(xs, ys);
-        swap(xd, yd);
-        swap(w, h);
-        ys = GxGDEH029A1_HEIGHT - ys  - h - 1;
-        yd = GxGDEH029A1_HEIGHT - yd  - h - 1;
-        break;
+    case 1:
+      swap(xs, ys);
+      swap(xd, yd);
+      swap(w, h);
+      xs = GxGDEH029A1_WIDTH - xs - w - 1;
+      xd = GxGDEH029A1_WIDTH - xd - w - 1;
+      break;
+    case 2:
+      xs = GxGDEH029A1_WIDTH - xs - w - 1;
+      ys = GxGDEH029A1_HEIGHT - ys - h - 1;
+      xd = GxGDEH029A1_WIDTH - xd - w - 1;
+      yd = GxGDEH029A1_HEIGHT - yd - h - 1;
+      break;
+    case 3:
+      swap(xs, ys);
+      swap(xd, yd);
+      swap(w, h);
+      ys = GxGDEH029A1_HEIGHT - ys - h - 1;
+      yd = GxGDEH029A1_HEIGHT - yd - h - 1;
+      break;
     }
   }
   _Init_Part(0x03);
@@ -394,7 +458,7 @@ void GxGDEH029A1::_writeData(uint8_t data)
   IO.writeDataTransaction(data);
 }
 
-void GxGDEH029A1::_writeCommandData(const uint8_t* pCommandData, uint8_t datalen)
+void GxGDEH029A1::_writeCommandData(const uint8_t *pCommandData, uint8_t datalen)
 {
   if (digitalRead(_busy))
   {
@@ -403,24 +467,25 @@ void GxGDEH029A1::_writeCommandData(const uint8_t* pCommandData, uint8_t datalen
   }
   IO.startTransaction();
   IO.writeCommand(*pCommandData++);
-  for (uint8_t i = 0; i < datalen - 1; i++)	// sub the command
+  for (uint8_t i = 0; i < datalen - 1; i++) // sub the command
   {
     IO.writeData(*pCommandData++);
   }
   IO.endTransaction();
-
 }
 
-void GxGDEH029A1::_waitWhileBusy(const char* comment)
+void GxGDEH029A1::_waitWhileBusy(const char *comment)
 {
   unsigned long start = micros();
   while (1)
   {
-    if (!digitalRead(_busy)) break;
+    if (!digitalRead(_busy))
+      break;
     delay(1);
     if (micros() - start > 10000000)
     {
-      if (_diag_enabled) Serial.println("Busy Timeout!");
+      if (_diag_enabled)
+        Serial.println("Busy Timeout!");
       break;
     }
   }
@@ -436,7 +501,7 @@ void GxGDEH029A1::_waitWhileBusy(const char* comment)
     }
 #endif
   }
-  (void) start;
+  (void)start;
 }
 
 void GxGDEH029A1::_setRamDataEntryMode(uint8_t em)
@@ -448,22 +513,22 @@ void GxGDEH029A1::_setRamDataEntryMode(uint8_t em)
   _writeData(em);
   switch (em)
   {
-    case 0x00: // x decrease, y decrease
-      _SetRamArea(xPixelsPar / 8, 0x00, yPixelsPar % 256, yPixelsPar / 256, 0x00, 0x00);  // X-source area,Y-gate area
-      _SetRamPointer(xPixelsPar / 8, yPixelsPar % 256, yPixelsPar / 256); // set ram
-      break;
-    case 0x01: // x increase, y decrease : as in demo code
-      _SetRamArea(0x00, xPixelsPar / 8, yPixelsPar % 256, yPixelsPar / 256, 0x00, 0x00);  // X-source area,Y-gate area
-      _SetRamPointer(0x00, yPixelsPar % 256, yPixelsPar / 256); // set ram
-      break;
-    case 0x02: // x decrease, y increase
-      _SetRamArea(xPixelsPar / 8, 0x00, 0x00, 0x00, yPixelsPar % 256, yPixelsPar / 256);  // X-source area,Y-gate area
-      _SetRamPointer(xPixelsPar / 8, 0x00, 0x00); // set ram
-      break;
-    case 0x03: // x increase, y increase : normal mode
-      _SetRamArea(0x00, xPixelsPar / 8, 0x00, 0x00, yPixelsPar % 256, yPixelsPar / 256);  // X-source area,Y-gate area
-      _SetRamPointer(0x00, 0x00, 0x00); // set ram
-      break;
+  case 0x00:                                                                           // x decrease, y decrease
+    _SetRamArea(xPixelsPar / 8, 0x00, yPixelsPar % 256, yPixelsPar / 256, 0x00, 0x00); // X-source area,Y-gate area
+    _SetRamPointer(xPixelsPar / 8, yPixelsPar % 256, yPixelsPar / 256);                // set ram
+    break;
+  case 0x01:                                                                           // x increase, y decrease : as in demo code
+    _SetRamArea(0x00, xPixelsPar / 8, yPixelsPar % 256, yPixelsPar / 256, 0x00, 0x00); // X-source area,Y-gate area
+    _SetRamPointer(0x00, yPixelsPar % 256, yPixelsPar / 256);                          // set ram
+    break;
+  case 0x02:                                                                           // x decrease, y increase
+    _SetRamArea(xPixelsPar / 8, 0x00, 0x00, 0x00, yPixelsPar % 256, yPixelsPar / 256); // X-source area,Y-gate area
+    _SetRamPointer(xPixelsPar / 8, 0x00, 0x00);                                        // set ram
+    break;
+  case 0x03:                                                                           // x increase, y increase : normal mode
+    _SetRamArea(0x00, xPixelsPar / 8, 0x00, 0x00, yPixelsPar % 256, yPixelsPar / 256); // X-source area,Y-gate area
+    _SetRamPointer(0x00, 0x00, 0x00);                                                  // set ram
+    break;
   }
 }
 
@@ -506,11 +571,11 @@ void GxGDEH029A1::_PowerOff(void)
 
 void GxGDEH029A1::_InitDisplay(uint8_t em)
 {
-  _writeCommandData(GDOControl, sizeof(GDOControl));  // Pannel configuration, Gate selection
-  _writeCommandData(softstart, sizeof(softstart));  // X decrease, Y decrease
-  _writeCommandData(VCOMVol, sizeof(VCOMVol));    // VCOM setting
-  _writeCommandData(DummyLine, sizeof(DummyLine));  // dummy line per gate
-  _writeCommandData(Gatetime, sizeof(Gatetime));    // Gate time setting
+  _writeCommandData(GDOControl, sizeof(GDOControl)); // Pannel configuration, Gate selection
+  _writeCommandData(softstart, sizeof(softstart));   // X decrease, Y decrease
+  _writeCommandData(VCOMVol, sizeof(VCOMVol));       // VCOM setting
+  _writeCommandData(DummyLine, sizeof(DummyLine));   // dummy line per gate
+  _writeCommandData(Gatetime, sizeof(Gatetime));     // Gate time setting
   _setRamDataEntryMode(em);
 }
 
@@ -548,7 +613,11 @@ void GxGDEH029A1::_Update_Part(void)
 
 void GxGDEH029A1::drawPaged(void (*drawCallback)(void))
 {
-  if (_current_page != -1) return;
+  if (_current_page != -1)
+  {
+    ESP_LOGD("GxGDEH029A1::drawPaged: _current_page !=-1");
+    return;
+  };
   _using_partial_mode = false;
   _Init_Full(0x03);
   _writeCommand(0x24);
@@ -573,7 +642,11 @@ void GxGDEH029A1::drawPaged(void (*drawCallback)(void))
 
 void GxGDEH029A1::drawPaged(void (*drawCallback)(uint32_t), uint32_t p)
 {
-  if (_current_page != -1) return;
+  if (_current_page != -1)
+  {
+    ESP_LOGD("GxGDEH029A1::drawPaged: _current_page != -1");
+    return;
+  }
   _using_partial_mode = false;
   _Init_Full(0x03);
   _writeCommand(0x24);
@@ -596,9 +669,13 @@ void GxGDEH029A1::drawPaged(void (*drawCallback)(uint32_t), uint32_t p)
   _PowerOff();
 }
 
-void GxGDEH029A1::drawPaged(void (*drawCallback)(const void*), const void* p)
+void GxGDEH029A1::drawPaged(void (*drawCallback)(const void *), const void *p)
 {
-  if (_current_page != -1) return;
+  if (_current_page != -1)
+  {
+    ESP_LOGD("GxGDEH029A1::drawPaged: _current_page != -1");
+    return;
+  }
   _using_partial_mode = false;
   _Init_Full(0x03);
   _writeCommand(0x24);
@@ -621,9 +698,13 @@ void GxGDEH029A1::drawPaged(void (*drawCallback)(const void*), const void* p)
   _PowerOff();
 }
 
-void GxGDEH029A1::drawPaged(void (*drawCallback)(const void*, const void*), const void* p1, const void* p2)
+void GxGDEH029A1::drawPaged(void (*drawCallback)(const void *, const void *), const void *p1, const void *p2)
 {
-  if (_current_page != -1) return;
+  if (_current_page != -1)
+  {
+    ESP_LOGD("GxGDEH029A1::drawPaged : _current_page != -1");
+    return;
+  }
   _using_partial_mode = false;
   _Init_Full(0x03);
   _writeCommand(0x24);
@@ -646,30 +727,34 @@ void GxGDEH029A1::drawPaged(void (*drawCallback)(const void*, const void*), cons
   _PowerOff();
 }
 
-void GxGDEH029A1::_rotate(uint16_t& x, uint16_t& y, uint16_t& w, uint16_t& h)
+void GxGDEH029A1::_rotate(uint16_t &x, uint16_t &y, uint16_t &w, uint16_t &h)
 {
   switch (getRotation())
   {
-    case 1:
-      swap(x, y);
-      swap(w, h);
-      x = GxGDEH029A1_WIDTH - x - w - 1;
-      break;
-    case 2:
-      x = GxGDEH029A1_WIDTH - x - w - 1;
-      y = GxGDEH029A1_HEIGHT - y - h - 1;
-      break;
-    case 3:
-      swap(x, y);
-      swap(w, h);
-      y = GxGDEH029A1_HEIGHT - y - h - 1;
-      break;
+  case 1:
+    swap(x, y);
+    swap(w, h);
+    x = GxGDEH029A1_WIDTH - x - w - 1;
+    break;
+  case 2:
+    x = GxGDEH029A1_WIDTH - x - w - 1;
+    y = GxGDEH029A1_HEIGHT - y - h - 1;
+    break;
+  case 3:
+    swap(x, y);
+    swap(w, h);
+    y = GxGDEH029A1_HEIGHT - y - h - 1;
+    break;
   }
 }
 
 void GxGDEH029A1::drawPagedToWindow(void (*drawCallback)(void), uint16_t x, uint16_t y, uint16_t w, uint16_t h)
 {
-  if (_current_page != -1) return;
+  if (_current_page != -1)
+  {
+    ESP_LOGD("GxGDEH029A1 drawPagedToWindow: _current_page != -1");
+    return;
+  }
   _rotate(x, y, w, h);
   if (!_using_partial_mode)
   {
@@ -712,7 +797,11 @@ void GxGDEH029A1::drawPagedToWindow(void (*drawCallback)(void), uint16_t x, uint
 
 void GxGDEH029A1::drawPagedToWindow(void (*drawCallback)(uint32_t), uint16_t x, uint16_t y, uint16_t w, uint16_t h, uint32_t p)
 {
-  if (_current_page != -1) return;
+  if (_current_page != -1)
+  {
+    ESP_LOGD("GxGDEH029A1::drawPagedToWindow: _current_page != -1");
+    return;
+  }
   _rotate(x, y, w, h);
   if (!_using_partial_mode)
   {
@@ -753,9 +842,13 @@ void GxGDEH029A1::drawPagedToWindow(void (*drawCallback)(uint32_t), uint16_t x, 
   _PowerOff();
 }
 
-void GxGDEH029A1::drawPagedToWindow(void (*drawCallback)(const void*), uint16_t x, uint16_t y, uint16_t w, uint16_t h, const void* p)
+void GxGDEH029A1::drawPagedToWindow(void (*drawCallback)(const void *), uint16_t x, uint16_t y, uint16_t w, uint16_t h, const void *p)
 {
-  if (_current_page != -1) return;
+  if (_current_page != -1)
+  {
+    ESP_LOGD("GxGDEH029A1::drawPagedToWindow: _current_page != -1");
+    return;
+  }
   _rotate(x, y, w, h);
   if (!_using_partial_mode)
   {
@@ -796,9 +889,13 @@ void GxGDEH029A1::drawPagedToWindow(void (*drawCallback)(const void*), uint16_t 
   _PowerOff();
 }
 
-void GxGDEH029A1::drawPagedToWindow(void (*drawCallback)(const void*, const void*), uint16_t x, uint16_t y, uint16_t w, uint16_t h, const void* p1, const void* p2)
+void GxGDEH029A1::drawPagedToWindow(void (*drawCallback)(const void *, const void *), uint16_t x, uint16_t y, uint16_t w, uint16_t h, const void *p1, const void *p2)
 {
-  if (_current_page != -1) return;
+  if (_current_page != -1)
+  {
+    ESP_LOGD("GxGDEH029A1::drawPagedToWindow: _current_page != -1");
+    return;
+  }
   _rotate(x, y, w, h);
   if (!_using_partial_mode)
   {
@@ -841,7 +938,11 @@ void GxGDEH029A1::drawPagedToWindow(void (*drawCallback)(const void*, const void
 
 void GxGDEH029A1::drawCornerTest(uint8_t em)
 {
-  if (_current_page != -1) return;
+  if (_current_page != -1)
+  {
+    ESP_LOGD("GxGDEH029A1::drawCornerTest: _current_page != -1");
+    return;
+  }
   _using_partial_mode = false;
   _Init_Full(em);
   _writeCommand(0x24);
@@ -850,14 +951,17 @@ void GxGDEH029A1::drawCornerTest(uint8_t em)
     for (uint32_t x = 0; x < GxGDEH029A1_WIDTH / 8; x++)
     {
       uint8_t data = 0xFF;
-      if ((x < 1) && (y < 8)) data = 0x00;
-      if ((x > GxGDEH029A1_WIDTH / 8 - 3) && (y < 16)) data = 0x00;
-      if ((x > GxGDEH029A1_WIDTH / 8 - 4) && (y > GxGDEH029A1_HEIGHT - 25)) data = 0x00;
-      if ((x < 4) && (y > GxGDEH029A1_HEIGHT - 33)) data = 0x00;
+      if ((x < 1) && (y < 8))
+        data = 0x00;
+      if ((x > GxGDEH029A1_WIDTH / 8 - 3) && (y < 16))
+        data = 0x00;
+      if ((x > GxGDEH029A1_WIDTH / 8 - 4) && (y > GxGDEH029A1_HEIGHT - 25))
+        data = 0x00;
+      if ((x < 4) && (y > GxGDEH029A1_HEIGHT - 33))
+        data = 0x00;
       _writeData(data);
     }
   }
   _Update_Full();
   _PowerOff();
 }
-

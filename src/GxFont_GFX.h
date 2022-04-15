@@ -23,7 +23,7 @@
 // NOTE: you need to SAVE any modified example to a saveable location for UTF-8 characters to work
 //       e.g. for Umlauts
 //
-//#define DIAG_UTF8(x) x // uncomment for Serial diagnostic of character codes > 127
+#define DIAG_UTF8(x) x // uncomment for Serial diagnostic of character codes > 127
 
 #ifndef _GxFont_GFX_H_
 #define _GxFont_GFX_H_

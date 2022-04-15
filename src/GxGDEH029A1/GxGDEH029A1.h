@@ -16,6 +16,7 @@
 
 #include "../GxEPD.h"
 
+
 // the physical number of pixels (for controller parameter)
 #define GxGDEH029A1_X_PIXELS 128
 #define GxGDEH029A1_Y_PIXELS 296
