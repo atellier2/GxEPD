@@ -285,6 +285,7 @@ void GxGDEH029A1::eraseDisplay(bool using_partial_update)
 
 bool GxGDEH029A1::updateWindow(uint16_t x, uint16_t y, uint16_t w, uint16_t h, bool using_rotation)
 {
+  Serial.print("updateWindow ....  ");
   if (_current_page != -1)
   {
     Serial.println("GxGDEH029A1::updateWindow Nous ne sommes pas sur la page -1");
@@ -311,9 +312,7 @@ bool GxGDEH029A1::updateWindow(uint16_t x, uint16_t y, uint16_t w, uint16_t h, b
   uint16_t ye = gx_uint16_min(GxGDEH029A1_HEIGHT, y + h) - 1;
   uint16_t xs_d8 = x / 8;
   uint16_t xe_d8 = xe / 8;
-  Serial.println("TEST");
   _Init_Part(0x03);
-  Serial.println("TEST2");
   _SetRamArea(xs_d8, xe_d8, y % 256, y / 256, ye % 256, ye / 256); // X-source area,Y-gate area
   _SetRamPointer(xs_d8, y % 256, y / 256);                         // set ram
   _waitWhileBusy();
@@ -344,6 +343,7 @@ bool GxGDEH029A1::updateWindow(uint16_t x, uint16_t y, uint16_t w, uint16_t h, b
     }
   }
   delay(GxGDEH029A1_PU_DELAY);
+  Serial.println(" .... fin !");
   return true;
 }
 
